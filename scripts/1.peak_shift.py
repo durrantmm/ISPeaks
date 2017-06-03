@@ -65,13 +65,13 @@ def main():
 	chrom = samfile.get_reference_name(0)
 	
 	for idx in range(0, len(best_offset_fwd)):
-		nextline = "\t".join(['chrom', str(idx), str(best_offset_fwd[idx]+best_offset_rev[idx])]) + "\n"
+		nextline = "\t".join([chrom, str(idx), str(best_offset_fwd[idx]+best_offset_rev[idx])]) + "\n"
 		depths_out.write(nextline)
 		
 	
 	print("Outputting shifted read BED files")
 	for read in samfile.fetch(): #walk across one bp at a time
-		bed_out.write("\t".join([read.query_name, chrom, str(read.get_reference_positions()[0]), str(read.get_reference_positions()[-1]), ('rev' if read.is_reverse else 'fwd')]) + "\n")
+		bed_out.write("\t".join([read.query_name, chrom, str(read.get_reference_positions()[0] + best_offset), str(read.get_reference_positions()[-1] - best_offset), ('rev' if read.is_reverse else 'fwd')]) + "\n")
 
 	samfile.close()
 	cors_out.close()
