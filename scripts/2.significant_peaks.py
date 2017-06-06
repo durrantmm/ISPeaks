@@ -38,7 +38,7 @@ def main():
 
 	# Calculate p-values for each base
 	for chrom in data_obj:
-		lambda_loc = data_obj[chrom]["total_count"] / data_obj[chrom]["reads_with_counts"]
+		lambda_loc = data_obj[chrom]["total_count"] / data_obj[chrom]["total_length"]
 		#single lambda_loc value used to calculate all p-values
 		print("count: ", data_obj[chrom]["total_count"] )
 		print("length: ", data_obj[chrom]["total_length"] )
@@ -54,7 +54,7 @@ def main():
 		current_peak = {}
 		p_vals = data_obj[chrom]["p_vals"]
 		for pos in range(len(p_vals)):
-			if p_vals[pos] < 0.0005: #p-value threshold (can update with q-value)
+			if p_vals[pos] < 0.0000005: #p-value threshold (can update with q-value)
 				missed_bases = 0
 				reads = data_obj[chrom]["reads"][pos]
 				if peak_active: #add this base to current peak
@@ -64,7 +64,7 @@ def main():
 					peak_active = True 
 			else: #not a significant base pair
 				missed_bases += 1
-				if missed_bases == 10 and peak_active: #peak has ended
+				if missed_bases == 20 and peak_active: #peak has ended
 					raw_peaks.append(current_peak)
 					peak_active = False #not currently adding to a peak
 		print(raw_peaks) #unprocessed peaks
@@ -72,10 +72,10 @@ def main():
 		processed_peaks = []
 		for peak in raw_peaks:
 			length = peak['end'] - peak['start']
-			if length >= 10: #only process peaks larger than a given length (10)
+			if length >= 50: #only process peaks larger than a given length (10)
 				peak["length"] = length
 				depth = peak['total_depth']
-				peak["coverage"] = depth / length
+				peak["average_coverage"] = depth / length
 				processed_peaks.append(peak)
 
 
@@ -97,6 +97,8 @@ def create_peak_obj(start_pos, reads):
 	peak = {"start": start_pos, "end": start_pos, "total_depth": reads}
 	return peak 
 	#add other stats about peak...
+
+#Tab-output chrom, start, end, max_depth, average_depth
 
 
 
