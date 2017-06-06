@@ -1,9 +1,6 @@
 import sys
 import pysam
-import numpy as np
 from scipy.stats import poisson
-from rpy2.robjects.packages import importr
-from rpy2.robjects.vectors import FloatVector
 import math
 
 #Usage: scripts/sig_peaks.py output/peakshift_outputs/sim_bcaccae1.47678.random_seq1.bam.corrected test_peak_shift.tsv peakshift_length
@@ -33,10 +30,10 @@ def main():
 		for pup in samfile.pileup(region=contig_name): #do calculations for each window (sliding base by base over regions where we have read coverage)
 			start_pos = pup.pos
 			end_pos = pup.pos + window_size
-			region_name = contig_name.strip() + ":" + str(start_pos) + ":" + str(end_pos)
-			depth = float(samfile.count(region=region_name)) 
+			depth = float(samfile.count(contig_name, start_pos, end_pos))
 			p_value = (1 - poisson.cdf(depth, mu=lambda_bg)) #calculate p_value from the poisson
 			window_obj = {"start":start_pos, "depth": depth, "p_value": p_value}
+			print(contig_name, window_obj)
 			window_arr.append(window_obj)
 
 		p_thresh = 0.00005 #set the p-threshold, IMPORTANT
