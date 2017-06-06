@@ -72,9 +72,9 @@ def main():
 	print("Outputting shifted read BED files")
 	for read in samfile.fetch(): #walk across one bp at a time
 		if read.is_reverse:
-			bed_out.write("\t".join([read.query_name, chrom, str(read.get_reference_positions()[0] - best_offset), str(read.get_reference_positions()[-1] - best_offset), 'rev']) + "\n")
+			bed_out.write("\t".join([read.query_name, chrom, str(read.get_reference_positions()[0] - best_offset), str(read.get_reference_positions()[-1] - best_offset), 'rev', str(-1*best_offset)]) + "\n")
 		else:
-			bed_out.write("\t".join([read.query_name, chrom, str(read.get_reference_positions()[0] + best_offset), str(read.get_reference_positions()[-1] + best_offset), 'fwd']) + "\n")
+			bed_out.write("\t".join([read.query_name, chrom, str(read.get_reference_positions()[0] + best_offset), str(read.get_reference_positions()[-1] + best_offset), 'fwd', str(best_offset)]) + "\n")
 
 	samfile.close()
 	cors_out.close()
