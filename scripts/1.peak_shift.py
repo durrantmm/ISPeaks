@@ -7,7 +7,9 @@ import numpy
 #single test
 #scripts/1.peak_shift.py data/6753_3-1-16.28116.IS614.bam tester tester2 tester3
 #run with 
-#ls -1 data/| grep bam$ | xargs -n 1 -I foo sh -c "scripts/1.peak_shift.py data/foo output/peakshift_outputs/foo.corrected_depths.tsv output/peakshift_outputs/foo.cross_correlations.txt output/peakshift_outputs/foo.correctedreads.bed output/peakshift_outputs/foo.corrected.bam &"  
+#ls -1 data/clinical | grep bam$ | xargs -n 1 -I foo sh -c "scripts/1.peak_shift.py data/clinical/foo output/peakshift_outputs/foo.corrected_depths.tsv output/peakshift_outputs/foo.cross_correlations.txt output/peakshift_outputs/foo.correctedreads.bed output/peakshift_outputs/foo.corrected.bam &"  
+#ls -1 data/simulated_insertions | grep bam$ | xargs -n 1 -I foo sh -c "scripts/1.peak_shift.py data/clinical/foo output/peakshift_outputs/foo.corrected_depths.tsv output/peakshift_outputs/foo.cross_correlations.txt output/peakshift_outputs/foo.correctedreads.bed output/peakshift_outputs/foo.corrected.bam &"  
+
 
 #then sort/index bam outputs
 #ls -1 output/peakshift_outputs/*corrected.bam | xargs -n 1 -I foo sh -c "samtools sort -o foo.sorted.bam foo &"
