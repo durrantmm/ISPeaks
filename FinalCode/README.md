@@ -41,3 +41,6 @@ ENCODE narrowPeaks format. Example usage:
    ```
    Rscript scripts/5.differential_peaks.R shifted.in.bam peaks.out.tsv peakshift_length 
    ```
+
+Assuming that you have all of the correct dependencies installed (which could be difficult), the entire pipeline can
+be run by typing bash`complete_analysis.sh`
