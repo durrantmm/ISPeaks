@@ -27,14 +27,14 @@ def main():
 
 		window_arr = [] #array of windows
 
-		for pup in samfile.pileup(region=contig_name): #do calculations for each window (sliding base by base over regions where we have read coverage)
-			start_pos = pup.pos
-			end_pos = pup.pos + window_size
+		for read in samfile.fetch(region=contig_name):
+			start_pos = read.pos
+			end_pos = read.pos + window_size
 			depth = float(samfile.count(contig_name, start_pos, end_pos))
-			p_value = (1 - poisson.cdf(depth, mu=lambda_bg)) #calculate p_value from the poisson
-			window_obj = {"start":start_pos, "depth": depth, "p_value": p_value}
-			print(contig_name, window_obj)
+			p_value = (1 - poisson.cdf(depth, mu=lambda_bg))  # calculate p_value from the poisson
+			window_obj = {"start": start_pos, "depth": depth, "p_value": p_value}
 			window_arr.append(window_obj)
+
 
 		p_thresh = 0.00005 #set the p-threshold, IMPORTANT
 		active_peak = False
