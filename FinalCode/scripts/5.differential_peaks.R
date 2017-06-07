@@ -15,10 +15,18 @@ require(reshape2)
 
 #for dev
 setwd('~/scg4_moss/projects/coursework/gene_245/ISPeaks/')
-file = 'output/bootstrap_resamples/6753_bootstrapped_counts.tsv'
+file1 = 'FinalCode/output/4.bootstrapped_counts/sim1.counts.tsv'
+file2 = 'FinalCode/output/4.bootstrapped_counts/sim2.counts.tsv'
+#file = 'output/bootstrap_resamples/6753_bootstrapped_counts.tsv'
 #file = 'output/bootstrap_resamples/diff_sim.merged.bootstraps.tsv'
-d.long = read.table(file, header = T)
-d.long = d.long[d.long$Sampling %in% c('EMPIRICAL', 'BOOTSTRAP1', 'BOOTSTRAP2', 'BOOTSTRAP3'),]
+d.1 = read.table(file1, header = T)
+d.1 = cbind(rep('samp1', nrow(d.1)), d.1)
+colnames(d.1)[1] = "Sample"
+d.2 = read.table(file2, header = T)
+d.2 = cbind(rep('samp2', nrow(d.1)), d.2)
+colnames(d.2)[1] = "Sample"
+d.long = rbind(d.1, d.2)
+#d.long = d.long[d.long$Sampling %in% c('EMPIRICAL', 'BOOTSTRAP1', 'BOOTSTRAP2', 'BOOTSTRAP3'),]
 d.long.2vars = data.frame(paste(d.long$Sample, d.long$Sampling, sep = '_'), paste(d.long$Contig, d.long$PeakStart, sep = '_'), d.long$ReadCount)
 colnames(d.long.2vars) = c('Sample', 'Peak', 'ReadCount')
 d.wide = reshape(d.long.2vars, idvar = "Sample", timevar = "Peak", direction = "wide", new.row.names = unique(paste(d.long$Sample, d.long$Sampling, sep = '_')))
@@ -41,12 +49,12 @@ mat[mat < -thr] <- -thr
 mat[mat > thr] <- thr
 rownames(mat) = sapply(rownames(mat), function(x) gsub('__', '  ', x))
 rownames(mat) = sapply(rownames(mat), function(x) strsplit(x, ' ')[[1]][1])
-pheatmap(mat, breaks=seq(from=-thr, to=thr, length=101),cluster_col=FALSE)
+#pheatmap(mat, breaks=seq(from=-thr, to=thr, length=101),cluster_col=FALSE)
 
-jpeg('images/simulated deseq2 longitudinal.jpeg', width = 4, height = 4, unit = 'in', res = 160)
+#jpeg('images/simulated deseq2 longitudinal.jpeg', width = 4, height = 4, unit = 'in', res = 160)
 #plot(-log10(res$pvalue/(0.05/nrow(d.wide))), ylab = "-log10 Adjusted p-value", xlab = 'Peaks Sorted by Position', main = "Simulated Longitudinal Data")
 plot(-log10(res$pvalue/(0.05/nrow(d.wide))), ylab = "-log10 Adjusted p-value", xlab = 'Peaks Sorted by Position', main = "Clinical Longitudinal Data")
-dev.off()
+#dev.off()
 
 heatmap(as.matrix(d.wide))
 
