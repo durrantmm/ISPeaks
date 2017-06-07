@@ -1,9 +1,13 @@
 #!/usr/bin/env Rscript
 
-require(boot)
-#require(DESeq2)
+#install deseq2
+#source("https://bioconductor.org/biocLite.R")
+#biocLite("DESeq2")
+
+require(DESeq2)
 #require(ggplot2)
-#require("pheatmap")
+require("pheatmap")
+require(reshape2)
 
 #args <- commandArgs(trailingOnly = TRUE)
 #file1 = args[1]
@@ -11,27 +15,35 @@ require(boot)
 
 #for dev
 setwd('~/scg4_moss/projects/coursework/gene_245/ISPeaks/')
-file1 = 'data/peaks/6753_12-15-15.47678.IS614.peaks.readcounts.tsv'
-file2 = 'data/peaks/6753_3-1-16.47678.IS614.peaks.readcounts.tsv'
-d.1 = read.table(file1, headers = T)
-d.2 = read.table(file2, headers = T)
-
-#bootstrap a number of samples from each
-
+file = 'output/bootstrap_resamples/6753_bootstrapped_counts.tsv'
+d.long = read.table(file, header = T)
+d.long = d.long[d.long$Sampling %in% c('EMPIRICAL', 'BOOTSTRAP1', 'BOOTSTRAP2', 'BOOTSTRAP3'),]
+d.long.2vars = data.frame(paste(d.long$Sample, d.long$Sampling, sep = '_'), paste(d.long$Contig, d.long$PeakStart, sep = '_'), d.long$ReadCount)
+colnames(d.long.2vars) = c('Sample', 'Peak', 'ReadCount')
+d.wide = reshape(d.long.2vars, idvar = "Sample", timevar = "Peak", direction = "wide", new.row.names = unique(paste(d.long$Sample, d.long$Sampling, sep = '_')))
+d.wide = d.wide[,2:ncol(d.wide)]
 #setup to call Deseq2
-group = c(1, 2)
+group = sapply(rownames(d.wide), function(x) strsplit(x, '_')[[1]][1])
+id = rownames(d.wide)
+metadata = data.frame(cbind(group, id))
 
-#some day 20 samples are controls!
-day[8:9] = '20ctrl'
-#include them in with the day 0 timepoints
-day[day == '20ctrl'] = 0
-day[day == '14'] = 13
-
-id = colnames(d)
-metadata = data.frame(cbind(day, id))
-
-
-input = d
-data = DESeqDataSetFromMatrix(countData = input, colData = metadata, design = ~ day)
+input = t(d.wide)
+data = DESeqDataSetFromMatrix(countData = input, colData = metadata, design = ~ group)
 proc = DESeq(data, test = "Wald")
 res = results(proc)
+
+betas = coef(proc)
+topGenes <- head(order(res$padj),100)
+mat <- betas[topGenes, -1]#[,c(1,4,5,6,2,3)]
+thr <- 3
+mat[mat < -thr] <- -thr
+mat[mat > thr] <- thr
+rownames(mat) = sapply(rownames(mat), function(x) gsub('__', '  ', x))
+rownames(mat) = sapply(rownames(mat), function(x) strsplit(x, ' ')[[1]][1])
+pheatmap(mat, breaks=seq(from=-thr, to=thr, length=101),cluster_col=FALSE)
+
+
+heatmap(as.matrix(d.wide))
+
+plot(-log10(res$pvalue))
+abline(h = -log10(0.05/nrow(d.wide)), lty = 3, col = 'darkgreen')
