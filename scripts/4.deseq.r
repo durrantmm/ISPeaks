@@ -16,6 +16,7 @@ require(reshape2)
 #for dev
 setwd('~/scg4_moss/projects/coursework/gene_245/ISPeaks/')
 file = 'output/bootstrap_resamples/6753_bootstrapped_counts.tsv'
+#file = 'output/bootstrap_resamples/diff_sim.merged.bootstraps.tsv'
 d.long = read.table(file, header = T)
 d.long = d.long[d.long$Sampling %in% c('EMPIRICAL', 'BOOTSTRAP1', 'BOOTSTRAP2', 'BOOTSTRAP3'),]
 d.long.2vars = data.frame(paste(d.long$Sample, d.long$Sampling, sep = '_'), paste(d.long$Contig, d.long$PeakStart, sep = '_'), d.long$ReadCount)
@@ -42,6 +43,10 @@ rownames(mat) = sapply(rownames(mat), function(x) gsub('__', '  ', x))
 rownames(mat) = sapply(rownames(mat), function(x) strsplit(x, ' ')[[1]][1])
 pheatmap(mat, breaks=seq(from=-thr, to=thr, length=101),cluster_col=FALSE)
 
+jpeg('images/simulated deseq2 longitudinal.jpeg', width = 4, height = 4, unit = 'in', res = 160)
+#plot(-log10(res$pvalue/(0.05/nrow(d.wide))), ylab = "-log10 Adjusted p-value", xlab = 'Peaks Sorted by Position', main = "Simulated Longitudinal Data")
+plot(-log10(res$pvalue/(0.05/nrow(d.wide))), ylab = "-log10 Adjusted p-value", xlab = 'Peaks Sorted by Position', main = "Clinical Longitudinal Data")
+dev.off()
 
 heatmap(as.matrix(d.wide))
 
