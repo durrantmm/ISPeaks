@@ -3,13 +3,14 @@ import pysam
 from scipy.stats import poisson
 import math
 
-#Usage: scripts/sig_peaks.py output/peakshift_outputs/sim_bcaccae1.47678.random_seq1.bam.corrected test_peak_shift.tsv peakshift_length
+usage = "Usage: scripts/sig_peaks.py output/peakshift_outputs/sim_bcaccae1.47678.random_seq1.bam.corrected test_peak_shift.tsv peakshift_length"
 
 window_size = 0
 final_peaks = []
 def main():
+	# Handle the inputs.
 	if len(sys.argv) != 4:
-		print("error incorrect arg length")
+		print(usage)
 		return
 	global window_size
 	input_file = sys.argv[1]
@@ -27,16 +28,16 @@ def main():
 
 		window_arr = [] #array of windows
 
-		for pup in samfile.pileup(region=contig_name): #do calculations for each window (sliding base by base over regions where we have read coverage)
-			start_pos = pup.pos
-			end_pos = pup.pos + window_size
+		for read in samfile.fetch(region=contig_name):
+			start_pos = read.pos
+			end_pos = read.pos + window_size
 			depth = float(samfile.count(contig_name, start_pos, end_pos))
-			p_value = (1 - poisson.cdf(depth, mu=lambda_bg)) #calculate p_value from the poisson
-			window_obj = {"start":start_pos, "depth": depth, "p_value": p_value}
-			print(contig_name, window_obj)
+			p_value = (1 - poisson.cdf(depth, mu=lambda_bg))  # calculate p_value from the poisson
+			window_obj = {"start": start_pos, "depth": depth, "p_value": p_value}
 			window_arr.append(window_obj)
 
-		p_thresh = 0.00005 #set the p-threshold, IMPORTANT
+
+		p_thresh = 5E-6 #set the p-threshold, IMPORTANT
 		active_peak = False
 		current_peak = {}
 		peaks = []
@@ -100,3 +101,6 @@ def output_final(f_name, peaks):
 
 if __name__ == '__main__':
 	main()
+
+
+git p
