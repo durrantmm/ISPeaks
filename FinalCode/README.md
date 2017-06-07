@@ -6,6 +6,8 @@ Class: Statistical and Machine Learning Methods for Genomics
 
 There are two folders of interest: `scripts and data`
 
+`data` contains a subset of the simulated data used in this project.  The full dataset for this project consists of Illumina short-read sequence data from clinical stool samples collected at Stanford Hospital, prepared and sequenced by Eli Moss, Matt Durrant, and other members of the Bhatt lab, and simulated validation data created by Matt Durrant.   
+
 `scripts` contains all of the most important code used for this project. The contents are briefly described as follows:
 
 * `scripts`
