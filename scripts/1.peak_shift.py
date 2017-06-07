@@ -6,13 +6,15 @@ import numpy
 from scipy import signal
 
 #single test
-#scripts/1.peak_shift.py data/clinical/6753_3-1-16.28116.IS614.bam tester tester2 tester3 tester4
+#scripts/1.peak_shift.py data/clinical/6753_3-1-16.28116.IS614.bam tester tester2 tester3 
 
 
 #run with 
 '''
-ls -1 data/clinical | grep bam$ | xargs -n 1 -I foo sh -c "scripts/1.peak_shift.py data/clinical/foo output/peakshift_outputs/foo.corrected_depths.tsv output/peakshift_outputs/foo.cross_correlations.txt output/peakshift_outputs/foo.correctedreads.bed output/peakshift_outputs/foo.corrected.bam &"  
-ls -1 data/simulated_insertions | grep bam$ | xargs -n 1 -I foo sh -c "scripts/1.peak_shift.py data/simulated_insertions/foo output/peakshift_outputs/foo.corrected_depths.tsv output/peakshift_outputs/foo.cross_correlations.txt output/peakshift_outputs/foo.correctedreads.bed output/peakshift_outputs/foo.corrected.bam &"  
+ls -1 data/clinical | grep bam$ | xargs -n 1 -I foo sh -c "scripts/1.peak_shift.py data/clinical/foo  output/peakshift_outputs/foo.cross_correlations.txt output/peakshift_outputs/foo.offset.txt output/peakshift_outputs/foo.corrected.bam &"  
+ls -1 data/simulated_insertions | grep bam$ | xargs -n 1 -I foo sh -c "scripts/1.peak_shift.py data/simulated_insertions/foo output/peakshift_outputs/foo.cross_correlations.txt output/peakshift_outputs/foo.offset.txt output/peakshift_outputs/foo.corrected.bam &"
+
+ls -1 data/simulated_differential_insertions | grep bam$ | xargs -n 1 -I foo sh -c "scripts/1.peak_shift.py data/simulated_differential_insertions/foo  output/peakshift_outputs/foo.cross_correlations.txt output/peakshift_outputs/foo.offset.txt output/peakshift_outputs/foo.corrected.bam &"  
 '''
 
 #then sort/index bam outputs
@@ -24,18 +26,16 @@ ls -1 data/simulated_insertions | grep bam$ | xargs -n 1 -I foo sh -c "scripts/1
 def main():
 
 	#IO
-	if len(sys.argv) != 6:
-		sys.exit('Usage: 1.peak_shift.py sample.bam corrected_depths.tsv cross_correlations_out.txt reads.bed shifted.bam')
+	if len(sys.argv) != 5:
+		sys.exit('Usage: 1.peak_shift.py sample.bam cross_correlations_out.txt offset.txt shifted.bam')
 		
 	inputf = sys.argv[1]
 	samfile_in = pysam.AlignmentFile(inputf, 'rb')		
-	depths_outf = sys.argv[2]
-	depths_out = open(depths_outf, 'w')
-	cors_outf = sys.argv[3]
+	cors_outf = sys.argv[2]
 	cors_out = open(cors_outf, 'w')
-	bed_outf = sys.argv[4]
-	bed_out = open(bed_outf, 'w')
-	bam_outf = sys.argv[5]
+	offset_outf = sys.argv[3]
+	offset_out = open(offset_outf, 'w')
+	bam_outf = sys.argv[4]
 	bam_out = pysam.AlignmentFile(bam_outf, 'wb', template=samfile_in)
 	
 	
@@ -67,40 +67,21 @@ def main():
 	
 	chrom = samfile_in.get_reference_name(0)
 	
-	for idx in range(0, len(best_offset_fwd)-1):
-		nextline = "\t".join([chrom, str(idx), str(best_offset_fwd[idx]+best_offset_rev[idx])]) + "\n"
-		depths_out.write(nextline)
-		
 	
 	print("Outputting shifted read BED and BAM files")
 	for read in samfile_in.fetch(): #walk across one bp at a time
-		if read.is_reverse:
-			bed_out.write("\t".join([
-				read.query_name, 
-				chrom, 
-				str(read.get_reference_positions()[0] - best_offset), 
-				str(max([0,read.get_reference_positions()[-1] - best_offset])), 
-				'rev', 
-				str(-1*best_offset)]) + 
-				"\n")
-			
+		if read.is_reverse:			
 			read.reference_start = max([0,read.reference_start - best_offset])
 		else:
-			bed_out.write("\t".join([
-				read.query_name, 
-				chrom, 
-				str(read.get_reference_positions()[0] + best_offset), 
-				str(read.get_reference_positions()[-1] + best_offset), 
-				'fwd', 
-				str(best_offset)]) + 
-				"\n")
-				
 			read.reference_start = read.reference_start + best_offset
 			
 		bam_out.write(read)
-		
+	
+	offset_out.write(str(best_offset))
+	
 	samfile_in.close()
 	cors_out.close()
+	offset_out.close()
 	bam_out.close()
 	
 	
